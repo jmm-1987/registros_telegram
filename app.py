@@ -455,26 +455,24 @@ def run_scheduler():
         schedule.run_pending()
         time.sleep(1)
 
+# Iniciar el bot en un thread separado
+logger.info("Iniciando thread del bot")
+bot_thread = threading.Thread(target=run_bot, daemon=True)
+bot_thread.start()
+logger.info("Thread del bot iniciado")
+
+# Iniciar el scheduler en un thread separado
+logger.info("Iniciando thread del scheduler")
+scheduler_thread = threading.Thread(target=run_scheduler, daemon=True)
+scheduler_thread.start()
+logger.info("Thread del scheduler iniciado")
+
 if __name__ == '__main__':
-    # Ya no es necesario crear las tablas aquí, ya se hace arriba
-    # Solo arranca la app y los threads
     logging.basicConfig(
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         level=logging.INFO
     )
     logger = logging.getLogger(__name__)
-
-    # Iniciar el bot en un thread separado
-    logger.info("Iniciando thread del bot")
-    bot_thread = threading.Thread(target=run_bot, daemon=True)
-    bot_thread.start()
-    logger.info("Thread del bot iniciado")
-
-    # Iniciar el scheduler en un thread separado
-    logger.info("Iniciando thread del scheduler")
-    scheduler_thread = threading.Thread(target=run_scheduler, daemon=True)
-    scheduler_thread.start()
-    logger.info("Thread del scheduler iniciado")
 
     # Ejecutar la aplicación Flask
     logger.info("Iniciando aplicación Flask")
