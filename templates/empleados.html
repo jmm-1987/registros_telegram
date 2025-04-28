@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Lista de Empleados</h1>
+    <a href="{{ url_for('nuevo_empleado') }}" class="btn btn-primary">Nuevo Empleado</a>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Apellidos</th>
+                <th>DNI</th>
+                <th>Teléfono</th>
+                <th>Horario</th>
+                <th>Sábados</th>
+                <th>Estado</th>
+                <th>Registrado en Telegram</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for empleado in empleados %}
+            <tr>
+                <td>{{ empleado.nombre }}</td>
+                <td>{{ empleado.apellidos }}</td>
+                <td>{{ empleado.dni }}</td>
+                <td>{{ empleado.telefono }}</td>
+                <td>
+                    {{ empleado.hora_entrada.strftime('%H:%M') }} - {{ empleado.hora_salida.strftime('%H:%M') }}<br>
+                    {{ empleado.hora_entrada2.strftime('%H:%M') }} - {{ empleado.hora_salida2.strftime('%H:%M') }}
+                </td>
+                <td>
+                    {% if empleado.sabados %}
+                        <span class="badge bg-success">Sí</span>
+                    {% else %}
+                        <span class="badge bg-secondary">No</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if empleado.activo %}
+                        <span class="badge bg-success">Activo</span>
+                    {% else %}
+                        <span class="badge bg-danger">Inactivo</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if empleado.telegram_id %}
+                        <span class="badge bg-success">Sí</span>
+                    {% else %}
+                        <span class="badge bg-danger">No</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="btn-group" role="group">
+                        <a href="{{ url_for('editar_empleado', empleado_id=empleado.id) }}" class="btn btn-sm btn-warning">
+                            Editar
+                        </a>
+                        <a href="{{ url_for('registros_empleado', empleado_id=empleado.id) }}" class="btn btn-sm btn-info">
+                            Registros
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %} 

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Horarios</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Fondo general */
+        body {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: #fff !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            color: #000 !important;
+        }
+
+        .navbar-brand img {
+            height: 40px;
+            margin-right: 10px;
+        }
+
+        .navbar-nav .nav-link {
+            color: #000 !important;
+            font-weight: 500;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: #0056b3 !important;
+        }
+
+        .navbar-toggler {
+            border-color: #000;
+        }
+
+        .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(0, 0, 0, 0.55)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+
+        /* Glassmorphism Card */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            color: #fff;
+            min-height: 300px;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.45);
+        }
+
+        .icon-hover {
+            transition: transform 0.3s ease, color 0.3s ease;
+        }
+
+        .icon-hover:hover {
+            transform: scale(1.3);
+            color: #00d4ff;
+        }
+
+        .card-title {
+            font-weight: bold;
+            margin-top: 15px;
+            font-size: 1.5rem;
+        }
+
+        .btn-custom {
+            margin-top: 15px;
+            border-radius: 30px;
+            padding: 8px 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+
+        .btn-custom:hover {
+            background: rgba(255, 255, 255, 0.3);
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        /* Tablas */
+        .table {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 15px;
+            color: #fff;
+        }
+
+        .table thead th {
+            background: rgba(255, 255, 255, 0.2);
+            border-bottom: none;
+        }
+
+        .table td, .table th {
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Formularios */
+        .form-control {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(0, 0, 0, 0.3);
+            color: #000;
+            border-radius: 10px;
+            padding: 10px 15px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            background: #fff;
+            border-color: #000;
+            color: #000;
+            box-shadow: 0 0 0 0.25rem rgba(0, 0, 0, 0.1);
+        }
+
+        .form-control::placeholder {
+            color: rgba(0, 0, 0, 0.6);
+        }
+
+        .form-label {
+            color: #000;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-check-label {
+            color: #000;
+        }
+
+        .form-text {
+            color: rgba(0, 0, 0, 0.7);
+        }
+
+        .form-select {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(0, 0, 0, 0.3);
+            color: #000;
+            border-radius: 10px;
+            padding: 10px 15px;
+        }
+
+        .form-select:focus {
+            background: #fff;
+            border-color: #000;
+            color: #000;
+            box-shadow: 0 0 0 0.25rem rgba(0, 0, 0, 0.1);
+        }
+
+        /* Alertas */
+        .alert {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Alditraex Logo">
+                <span class="text-dark">Control de Horarios</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('empleados') }}">Empleados</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('consulta_registros') }}">Consulta Registros</a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    <span class="text-dark me-3">
+                        <i class="fas fa-user me-2"></i>
+                        {{ current_user.nombre if current_user else 'Usuario' }}
+                    </span>
+                    <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm">
+                        <i class="fas fa-sign-out-alt me-1"></i>
+                        Cerrar Sesión
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

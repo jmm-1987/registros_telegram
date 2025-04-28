@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0">Nuevo Empleado</h2>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="nombre" class="form-label">Nombre</label>
+                            <input type="text" class="form-control" id="nombre" name="nombre" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="apellidos" class="form-label">Apellidos</label>
+                            <input type="text" class="form-control" id="apellidos" name="apellidos" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="dni" class="form-label">DNI</label>
+                            <input type="text" class="form-control" id="dni" name="dni" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="seg_social" class="form-label">Nº Seguridad Social</label>
+                            <input type="text" class="form-control" id="seg_social" name="seg_social" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="telefono" class="form-label">Teléfono</label>
+                            <input type="tel" class="form-control" id="telefono" name="telefono" required>
+                            <div class="form-text">Este número se usará para vincular el registro con Telegram</div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label for="hora_entrada" class="form-label">Hora Entrada Mañana</label>
+                            <input type="time" class="form-control" id="hora_entrada" name="hora_entrada" value="09:00" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="hora_salida" class="form-label">Hora Salida Mañana</label>
+                            <input type="time" class="form-control" id="hora_salida" name="hora_salida" value="14:00" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="hora_entrada2" class="form-label">Hora Entrada Tarde</label>
+                            <input type="time" class="form-control" id="hora_entrada2" name="hora_entrada2" value="16:00" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="hora_salida2" class="form-label">Hora Salida Tarde</label>
+                            <input type="time" class="form-control" id="hora_salida2" name="hora_salida2" value="20:00" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="sabados" name="sabados">
+                                <label class="form-check-label" for="sabados">
+                                    Trabaja Sábados
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="activo" name="activo" checked>
+                                <label class="form-check-label" for="activo">
+                                    Empleado Activo
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Registrar Empleado</button>
+                        <a href="{{ url_for('empleados') }}" class="btn btn-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

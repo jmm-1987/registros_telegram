@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Panel de Control</h2>
+                    <p class="text-muted">Estado actual de las jornadas laborales</p>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Empleado</th>
+                                    <th>Estado</th>
+                                    <th>Último Registro</th>
+                                    <th>Hora de Salida</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for empleado in empleados %}
+                                <tr>
+                                    <td>{{ empleado.nombre }} {{ empleado.apellidos }}</td>
+                                    <td>
+                                        {% if empleado.tiene_jornada_abierta() %}
+                                            {% if empleado.se_paso_hora_salida() %}
+                                                <button class="btn btn-danger btn-sm blink">Fuera de Horario</button>
+                                            {% else %}
+                                                <button class="btn btn-success btn-sm">Trabajando</button>
+                                            {% endif %}
+                                        {% else %}
+                                            <button class="btn btn-secondary btn-sm">No Trabajando</button>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if empleado.registros %}
+                                            {% set ultimo_registro = empleado.registros|sort(attribute='fecha', reverse=true)|first %}
+                                            {{ ultimo_registro.fecha_madrid.strftime('%H:%M') }} ({{ ultimo_registro.tipo }})
+                                        {% else %}
+                                            Sin registros
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if empleado.tiene_jornada_abierta() %}
+                                            {% set ultimo_registro = empleado.registros|sort(attribute='fecha', reverse=true)|first %}
+                                            {% if ultimo_registro.fecha_madrid.time() < empleado.hora_salida %}
+                                                {{ empleado.hora_salida.strftime('%H:%M') }}
+                                            {% else %}
+                                                {{ empleado.hora_salida2.strftime('%H:%M') }}
+                                            {% endif %}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .blink {
+        animation: blinker 1s linear infinite;
+    }
+    @keyframes blinker {
+        50% {
+            opacity: 0;
+        }
+    }
+</style>
+{% endblock %} 

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h2 class="mb-0">Consulta de Registros</h2>
+    </div>
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <label for="fecha_inicio" class="form-label">Fecha Inicio</label>
+                <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" value="{{ fecha_inicio }}">
+            </div>
+            <div class="col-md-3">
+                <label for="fecha_fin" class="form-label">Fecha Fin</label>
+                <input type="date" class="form-control" id="fecha_fin" name="fecha_fin" value="{{ fecha_fin }}">
+            </div>
+            <div class="col-md-4">
+                <label for="empleado_id" class="form-label">Empleado</label>
+                <select class="form-select" id="empleado_id" name="empleado_id">
+                    <option value="todos" {% if empleado_id == 'todos' %}selected{% endif %}>Todos los empleados</option>
+                    {% for empleado in empleados %}
+                    <option value="{{ empleado.id }}" {% if empleado_id|string == empleado.id|string %}selected{% endif %}>
+                        {{ empleado.apellidos }}, {{ empleado.nombre }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="mb-0">Resultados</h3>
+        <button class="btn btn-success" onclick="exportarExcel()">Exportar a Excel</button>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped" id="tablaRegistros">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Empleado</th>
+                        <th>Entrada</th>
+                        <th>Salida</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for registro in registros %}
+                    <tr>
+                        <td>{{ registro.fecha.strftime('%d/%m/%Y') }}</td>
+                        <td>{{ registro.empleado.nombre }} {{ registro.empleado.apellidos }}</td>
+                        <td>
+                            {% if registro.entrada %}
+                                {{ registro.entrada.strftime('%H:%M') }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if registro.salida %}
+                                {{ registro.salida.strftime('%H:%M') }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+<script>
+function exportarExcel() {
+    const table = document.getElementById('tablaRegistros');
+    const wb = XLSX.utils.table_to_book(table, {sheet: "Registros"});
+    const nombreArchivo = 'registros_' + document.getElementById('fecha_inicio').value + '_' + document.getElementById('fecha_fin').value + '.xlsx';
+    XLSX.writeFile(wb, nombreArchivo);
+}
+</script>
+{% endblock %} 
