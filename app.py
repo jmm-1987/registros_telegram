@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
-from flask_migrate import Migrate
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from datetime import datetime, timedelta
 import os
@@ -31,7 +30,17 @@ if app.config['SQLALCHEMY_DATABASE_URI'].startswith('postgres://'):
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
-migrate = Migrate(app, db)
+
+# CREA LAS TABLAS SI NO EXISTEN (esto se ejecuta siempre, también en Render)
+with app.app_context():
+    db.create_all()
+    # (opcional) crea usuario root si no existe
+    if not Usuario.query.filter_by(username='root').first():
+        admin = Usuario(username='root')
+        admin.set_password('root')
+        db.session.add(admin)
+        db.session.commit()
+
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
@@ -447,34 +456,26 @@ def run_scheduler():
         time.sleep(1)
 
 if __name__ == '__main__':
-    # Configurar logging para ver todos los mensajes
+    # Ya no es necesario crear las tablas aquí, ya se hace arriba
+    # Solo arranca la app y los threads
     logging.basicConfig(
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         level=logging.INFO
     )
     logger = logging.getLogger(__name__)
-    
-    # Iniciar Flask
-    with app.app_context():
-        db.create_all()
-        if not Usuario.query.filter_by(username='root').first():
-            admin = Usuario(username='root')
-            admin.set_password('root')
-            db.session.add(admin)
-            db.session.commit()
-    
+
     # Iniciar el bot en un thread separado
     logger.info("Iniciando thread del bot")
     bot_thread = threading.Thread(target=run_bot, daemon=True)
     bot_thread.start()
     logger.info("Thread del bot iniciado")
-    
+
     # Iniciar el scheduler en un thread separado
     logger.info("Iniciando thread del scheduler")
     scheduler_thread = threading.Thread(target=run_scheduler, daemon=True)
     scheduler_thread.start()
     logger.info("Thread del scheduler iniciado")
-    
+
     # Ejecutar la aplicación Flask
     logger.info("Iniciando aplicación Flask")
     app.run(debug=True, use_reloader=False) 
