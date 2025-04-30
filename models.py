@@ -3,6 +3,7 @@ from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, time
 import pytz
+from flask import request
 
 db = SQLAlchemy()
 
@@ -43,10 +44,10 @@ class Empleado(db.Model):
     seg_social = db.Column(db.String(12), unique=True, nullable=False)
     telefono = db.Column(db.String(20), unique=True, nullable=False)
     telegram_id = db.Column(db.String(50), unique=True)
-    hora_entrada = db.Column(db.Time, nullable=False, default=time(9, 0))
-    hora_salida = db.Column(db.Time, nullable=False, default=time(14, 0))
-    hora_entrada2 = db.Column(db.Time, nullable=False, default=time(16, 0))
-    hora_salida2 = db.Column(db.Time, nullable=False, default=time(20, 0))
+    hora_entrada = db.Column(db.Time, nullable=True, default=None)
+    hora_salida = db.Column(db.Time, nullable=True, default=None)
+    hora_entrada2 = db.Column(db.Time, nullable=True, default=None)
+    hora_salida2 = db.Column(db.Time, nullable=True, default=None)
     sabados = db.Column(db.Boolean, default=False)
     activo = db.Column(db.Boolean, default=True)
     registros = db.relationship('Registro', backref='empleado', lazy=True)
@@ -73,12 +74,12 @@ class Empleado(db.Model):
         ultima_entrada = registros_ordenados[0].fecha_madrid.time()
         
         # Determinar qué turno está activo
-        if ultima_entrada < self.hora_salida:
+        if ultima_entrada < self.hora_entrada:
             # Turno de mañana
-            return hora_actual > self.hora_salida
+            return self.hora_salida is not None and hora_actual > self.hora_salida
         else:
             # Turno de tarde
-            return hora_actual > self.hora_salida2
+            return self.hora_salida2 is not None and hora_actual > self.hora_salida2
 
 class Registro(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -97,4 +98,28 @@ class Registro(db.Model):
     @property
     def fecha_madrid(self):
         """Obtener la fecha en hora de Madrid"""
-        return utc_to_madrid(self.fecha) 
+        return utc_to_madrid(self.fecha)
+
+def parse_time_field(value):
+    return datetime.strptime(value, '%H:%M').time() if value else None
+
+def process_employee_times(form_data):
+    """Procesa los campos de tiempo del formulario de empleado"""
+    turno_partido = 'turno_partido' in form_data
+    
+    hora_entrada = parse_time_field(form_data.get('hora_entrada'))
+    hora_salida = parse_time_field(form_data.get('hora_salida'))
+    
+    if turno_partido:
+        hora_entrada2 = parse_time_field(form_data.get('hora_entrada2'))
+        hora_salida2 = parse_time_field(form_data.get('hora_salida2'))
+    else:
+        hora_entrada2 = None
+        hora_salida2 = None
+    
+    return {
+        'hora_entrada': hora_entrada,
+        'hora_salida': hora_salida,
+        'hora_entrada2': hora_entrada2,
+        'hora_salida2': hora_salida2
+    } 

@@ -7,21 +7,35 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <style>
+        /* Variables de colores */
+        :root {
+            --primary-red: #d32f2f;      /* Rojo principal del logo */
+            --primary-yellow: #ffd700;   /* Amarillo del logo */
+            --primary-black: #212121;    /* Negro del texto del logo */
+            --light-red: #ffebee;        /* Rojo muy suave para fondos */
+            --dark-red: #b71c1c;         /* Rojo oscuro para hover */
+            --light-yellow: #fff9c4;     /* Amarillo suave para fondos */
+            --dark-yellow: #fbc02d;      /* Amarillo oscuro para hover */
+            --white: #ffffff;
+            --gray-light: #f5f5f5;
+            --gray: #757575;
+        }
+
         /* Fondo general */
         body {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: var(--light-red);
             min-height: 100vh;
-            color: #fff;
+            color: var(--primary-black);
         }
 
         /* Navbar */
         .navbar {
-            background: #fff !important;
+            background: var(--white) !important;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .navbar-brand {
-            color: #000 !important;
+            color: var(--primary-black) !important;
         }
 
         .navbar-brand img {
@@ -30,16 +44,16 @@
         }
 
         .navbar-nav .nav-link {
-            color: #000 !important;
+            color: var(--primary-black) !important;
             font-weight: 500;
         }
 
         .navbar-nav .nav-link:hover {
-            color: #0056b3 !important;
+            color: var(--primary-red) !important;
         }
 
         .navbar-toggler {
-            border-color: #000;
+            border-color: var(--primary-black);
         }
 
         .navbar-toggler-icon {
@@ -48,127 +62,176 @@
 
         /* Glassmorphism Card */
         .glass-card {
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            background: var(--white);
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
-            color: #fff;
+            color: var(--primary-black);
             min-height: 300px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
         }
 
         .glass-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.45);
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
 
         .icon-hover {
             transition: transform 0.3s ease, color 0.3s ease;
+            color: var(--primary-red);
         }
 
         .icon-hover:hover {
-            transform: scale(1.3);
-            color: #00d4ff;
+            transform: scale(1.2);
+            color: var(--dark-red);
         }
 
         .card-title {
             font-weight: bold;
             margin-top: 15px;
             font-size: 1.5rem;
+            color: var(--primary-black);
         }
 
         .btn-custom {
             margin-top: 15px;
-            border-radius: 30px;
+            border-radius: 8px;
             padding: 8px 20px;
-            background: rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: #fff;
+            background: var(--primary-red);
+            border: none;
+            color: var(--white);
             transition: all 0.3s ease;
         }
 
         .btn-custom:hover {
-            background: rgba(255, 255, 255, 0.3);
-            color: #fff;
+            background: var(--dark-red);
+            color: var(--white);
             transform: translateY(-2px);
         }
 
         /* Tablas */
         .table {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-radius: 15px;
-            color: #fff;
+            background: var(--white);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .table thead th {
-            background: rgba(255, 255, 255, 0.2);
-            border-bottom: none;
+            background: var(--primary-red);
+            color: var(--white);
+            border: none;
+            font-weight: 500;
         }
 
         .table td, .table th {
-            border-color: rgba(255, 255, 255, 0.1);
+            border-color: rgba(0, 0, 0, 0.1);
+            padding: 12px;
         }
 
         /* Formularios */
         .form-control {
-            background: rgba(255, 255, 255, 0.9);
-            border: 2px solid rgba(0, 0, 0, 0.3);
-            color: #000;
-            border-radius: 10px;
+            background: var(--white);
+            border: 2px solid rgba(0, 0, 0, 0.1);
+            color: var(--primary-black);
+            border-radius: 8px;
             padding: 10px 15px;
             transition: all 0.3s ease;
         }
 
         .form-control:focus {
-            background: #fff;
-            border-color: #000;
-            color: #000;
-            box-shadow: 0 0 0 0.25rem rgba(0, 0, 0, 0.1);
+            background: var(--white);
+            border-color: var(--primary-red);
+            color: var(--primary-black);
+            box-shadow: 0 0 0 0.25rem rgba(211, 47, 47, 0.1);
         }
 
         .form-control::placeholder {
-            color: rgba(0, 0, 0, 0.6);
+            color: rgba(0, 0, 0, 0.4);
         }
 
         .form-label {
-            color: #000;
+            color: var(--primary-black);
             font-weight: 500;
             margin-bottom: 0.5rem;
         }
 
         .form-check-label {
-            color: #000;
+            color: #333;
         }
 
         .form-text {
-            color: rgba(0, 0, 0, 0.7);
+            color: rgba(0, 0, 0, 0.6);
         }
 
         .form-select {
-            background: rgba(255, 255, 255, 0.9);
-            border: 2px solid rgba(0, 0, 0, 0.3);
-            color: #000;
-            border-radius: 10px;
+            background: var(--white);
+            border: 2px solid rgba(0, 0, 0, 0.1);
+            color: var(--primary-black);
+            border-radius: 8px;
             padding: 10px 15px;
         }
 
         .form-select:focus {
-            background: #fff;
-            border-color: #000;
-            color: #000;
-            box-shadow: 0 0 0 0.25rem rgba(0, 0, 0, 0.1);
+            background: var(--white);
+            border-color: var(--primary-red);
+            color: var(--primary-black);
+            box-shadow: 0 0 0 0.25rem rgba(211, 47, 47, 0.1);
         }
 
         /* Alertas */
         .alert {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: #fff;
+            background: var(--white);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            color: var(--primary-black);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Botones */
+        .btn-primary {
+            background-color: var(--primary-red);
+            border-color: var(--primary-red);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--dark-red);
+            border-color: var(--dark-red);
+            color: var(--white);
+        }
+
+        .btn-success {
+            background-color: var(--primary-yellow);
+            border-color: var(--primary-yellow);
+            color: var(--primary-black);
+        }
+
+        .btn-success:hover {
+            background-color: var(--dark-yellow);
+            border-color: var(--dark-yellow);
+            color: var(--primary-black);
+        }
+
+        .btn-danger {
+            background-color: var(--primary-red);
+            border-color: var(--primary-red);
+            color: var(--white);
+        }
+
+        .btn-danger:hover {
+            background-color: var(--dark-red);
+            border-color: var(--dark-red);
+            color: var(--white);
+        }
+
+        /* Títulos y textos */
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--primary-black);
+        }
+
+        .text-muted {
+            color: var(--gray) !important;
         }
     </style>
 </head>
@@ -189,6 +252,12 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('consulta_registros') }}">Consulta Registros</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('panel_control') }}">
+                            <i class="fas fa-tachometer-alt text-danger me-1"></i>
+                            <span class="fw-bold">Panel de Control</span>
+                        </a>
                     </li>
                 </ul>
                 <div class="d-flex align-items-center">

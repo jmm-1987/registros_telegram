@@ -14,10 +14,17 @@
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th>Empleado</th>
-                                    <th>Estado</th>
-                                    <th>Último Registro</th>
-                                    <th>Hora de Salida</th>
+                                    <th rowspan="2">Empleado</th>
+                                    <th rowspan="2">Estado</th>
+                                    <th colspan="2" class="text-center bg-light">Horario Programado</th>
+                                    <th colspan="2" class="text-center bg-light">Fichajes Reales</th>
+                                    <th rowspan="2">Horas Activas</th>
+                                </tr>
+                                <tr>
+                                    <th class="bg-light">Entrada</th>
+                                    <th class="bg-light">Salida</th>
+                                    <th class="bg-light">Entrada</th>
+                                    <th class="bg-light">Salida</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -35,21 +42,59 @@
                                             <button class="btn btn-secondary btn-sm">No Trabajando</button>
                                         {% endif %}
                                     </td>
-                                    <td>
-                                        {% if empleado.registros %}
-                                            {% set ultimo_registro = empleado.registros|sort(attribute='fecha', reverse=true)|first %}
-                                            {{ ultimo_registro.fecha_madrid.strftime('%H:%M') }} ({{ ultimo_registro.tipo }})
+                                    <td class="horario-programado">{{ empleado.hora_entrada.strftime('%H:%M') }}</td>
+                                    <td class="horario-programado">
+                                        {% if empleado.hora_salida %}
+                                            {% if empleado.hora_entrada2 and empleado.hora_salida2 %}
+                                                {% set ultimo_registro = empleado.registros|sort(attribute='fecha', reverse=true)|first %}
+                                                {% if ultimo_registro and ultimo_registro.fecha_madrid and ultimo_registro.fecha_madrid.time() and empleado.hora_salida %}
+                                                    {% if ultimo_registro.fecha_madrid.time() < empleado.hora_salida %}
+                                                        {{ empleado.hora_salida.strftime('%H:%M') }}
+                                                    {% else %}
+                                                        {{ empleado.hora_salida2.strftime('%H:%M') }}
+                                                    {% endif %}
+                                                {% else %}
+                                                    {{ empleado.hora_salida.strftime('%H:%M') }}
+                                                {% endif %}
+                                            {% else %}
+                                                {{ empleado.hora_salida.strftime('%H:%M') }}
+                                            {% endif %}
                                         {% else %}
-                                            Sin registros
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td class="fichaje-real">
+                                        {% if empleado.registros %}
+                                            {% set entrada = empleado.registros|selectattr('tipo', 'equalto', 'entrada')|sort(attribute='fecha', reverse=true)|first %}
+                                            {% if entrada %}
+                                                {{ entrada.fecha_madrid.strftime('%H:%M') }}
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td class="fichaje-real">
+                                        {% if empleado.registros %}
+                                            {% set salida = empleado.registros|selectattr('tipo', 'equalto', 'salida')|sort(attribute='fecha', reverse=true)|first %}
+                                            {% if salida %}
+                                                {{ salida.fecha_madrid.strftime('%H:%M') }}
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        {% else %}
+                                            -
                                         {% endif %}
                                     </td>
                                     <td>
                                         {% if empleado.tiene_jornada_abierta() %}
-                                            {% set ultimo_registro = empleado.registros|sort(attribute='fecha', reverse=true)|first %}
-                                            {% if ultimo_registro.fecha_madrid.time() < empleado.hora_salida %}
-                                                {{ empleado.hora_salida.strftime('%H:%M') }}
+                                            {% set entrada = empleado.registros|selectattr('tipo', 'equalto', 'entrada')|sort(attribute='fecha', reverse=true)|first %}
+                                            {% if entrada %}
+                                                {% set horas_activas = (now() - entrada.fecha_madrid).total_seconds() / 3600 %}
+                                                {{ "%.1f"|format(horas_activas) }}h
                                             {% else %}
-                                                {{ empleado.hora_salida2.strftime('%H:%M') }}
+                                                -
                                             {% endif %}
                                         {% else %}
                                             -
@@ -74,6 +119,34 @@
         50% {
             opacity: 0;
         }
+    }
+    .table th {
+        white-space: nowrap;
+        vertical-align: middle;
+        text-align: center;
+    }
+    .table td {
+        vertical-align: middle;
+    }
+    .bg-light {
+        background-color: #ffd699 !important;
+    }
+    .table thead th {
+        border-bottom: 2px solid #dee2e6;
+    }
+    .horario-programado {
+        color: #6c757d;
+        font-weight: 500;
+    }
+    .fichaje-real {
+        color: #28a745;
+        font-weight: 500;
+    }
+    .table {
+        border-collapse: collapse;
+    }
+    .table th, .table td {
+        border: 1px solid #dee2e6;
     }
 </style>
 {% endblock %} 

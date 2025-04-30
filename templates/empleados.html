@@ -29,8 +29,12 @@
                 <td>{{ empleado.dni }}</td>
                 <td>{{ empleado.telefono }}</td>
                 <td>
-                    {{ empleado.hora_entrada.strftime('%H:%M') }} - {{ empleado.hora_salida.strftime('%H:%M') }}<br>
-                    {{ empleado.hora_entrada2.strftime('%H:%M') }} - {{ empleado.hora_salida2.strftime('%H:%M') }}
+                    {% if empleado.hora_entrada and empleado.hora_salida %}
+                        {{ empleado.hora_entrada.strftime('%H:%M') }} - {{ empleado.hora_salida.strftime('%H:%M') }}
+                    {% endif %}
+                    {% if empleado.hora_entrada2 and empleado.hora_salida2 %}
+                        <br>{{ empleado.hora_entrada2.strftime('%H:%M') }} - {{ empleado.hora_salida2.strftime('%H:%M') }}
+                    {% endif %}
                 </td>
                 <td>
                     {% if empleado.sabados %}

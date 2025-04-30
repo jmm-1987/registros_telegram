@@ -37,24 +37,37 @@
                             <input type="tel" class="form-control" id="telefono" name="telefono" value="{{ empleado.telefono }}" required>
                             <div class="form-text">Este número se usará para vincular el registro con Telegram</div>
                         </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="turno_partido" name="turno_partido"
+                                       {% if empleado.hora_entrada2 and empleado.hora_salida2 %}checked{% endif %}>
+                                <label class="form-check-label" for="turno_partido">
+                                    Turno Partido
+                                </label>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-3 mb-3">
                             <label for="hora_entrada" class="form-label">Hora Entrada Mañana</label>
-                            <input type="time" class="form-control" id="hora_entrada" name="hora_entrada" value="{{ empleado.hora_entrada.strftime('%H:%M') }}" required>
+                            <input type="time" class="form-control" id="hora_entrada" name="hora_entrada"
+                                   value="{% if empleado.hora_entrada %}{{ empleado.hora_entrada.strftime('%H:%M') }}{% else %}09:00{% endif %}" required>
                         </div>
                         <div class="col-md-3 mb-3">
                             <label for="hora_salida" class="form-label">Hora Salida Mañana</label>
-                            <input type="time" class="form-control" id="hora_salida" name="hora_salida" value="{{ empleado.hora_salida.strftime('%H:%M') }}" required>
+                            <input type="time" class="form-control" id="hora_salida" name="hora_salida"
+                                   value="{% if empleado.hora_salida %}{{ empleado.hora_salida.strftime('%H:%M') }}{% else %}14:00{% endif %}" required>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-3 mb-3 turno-tarde">
                             <label for="hora_entrada2" class="form-label">Hora Entrada Tarde</label>
-                            <input type="time" class="form-control" id="hora_entrada2" name="hora_entrada2" value="{{ empleado.hora_entrada2.strftime('%H:%M') }}" required>
+                            <input type="time" class="form-control" id="hora_entrada2" name="hora_entrada2"
+                                   value="{% if empleado.hora_entrada2 %}{{ empleado.hora_entrada2.strftime('%H:%M') }}{% else %}16:00{% endif %}">
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-3 mb-3 turno-tarde">
                             <label for="hora_salida2" class="form-label">Hora Salida Tarde</label>
-                            <input type="time" class="form-control" id="hora_salida2" name="hora_salida2" value="{{ empleado.hora_salida2.strftime('%H:%M') }}" required>
+                            <input type="time" class="form-control" id="hora_salida2" name="hora_salida2"
+                                   value="{% if empleado.hora_salida2 %}{{ empleado.hora_salida2.strftime('%H:%M') }}{% else %}20:00{% endif %}">
                         </div>
                     </div>
 
@@ -86,4 +99,24 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const turnoPartidoCheckbox = document.getElementById('turno_partido');
+    const turnoTardeInputs = document.querySelectorAll('.turno-tarde input');
+    
+    function updateTurnoTarde() {
+        const isChecked = turnoPartidoCheckbox.checked;
+        document.querySelectorAll('.turno-tarde').forEach(div => {
+            div.style.display = isChecked ? 'block' : 'none';
+        });
+        turnoTardeInputs.forEach(input => {
+            input.required = isChecked;
+        });
+    }
+    
+    turnoPartidoCheckbox.addEventListener('change', updateTurnoTarde);
+    updateTurnoTarde(); // Ejecutar al cargar la página
+});
+</script>
 {% endblock %} 

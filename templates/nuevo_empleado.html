@@ -37,6 +37,14 @@
                             <input type="tel" class="form-control" id="telefono" name="telefono" required>
                             <div class="form-text">Este número se usará para vincular el registro con Telegram</div>
                         </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="turno_partido" name="turno_partido" checked>
+                                <label class="form-check-label" for="turno_partido">
+                                    Turno Partido
+                                </label>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="row">
@@ -48,13 +56,13 @@
                             <label for="hora_salida" class="form-label">Hora Salida Mañana</label>
                             <input type="time" class="form-control" id="hora_salida" name="hora_salida" value="14:00" required>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-3 mb-3 turno-tarde">
                             <label for="hora_entrada2" class="form-label">Hora Entrada Tarde</label>
-                            <input type="time" class="form-control" id="hora_entrada2" name="hora_entrada2" value="16:00" required>
+                            <input type="time" class="form-control" id="hora_entrada2" name="hora_entrada2" value="16:00">
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-3 mb-3 turno-tarde">
                             <label for="hora_salida2" class="form-label">Hora Salida Tarde</label>
-                            <input type="time" class="form-control" id="hora_salida2" name="hora_salida2" value="20:00" required>
+                            <input type="time" class="form-control" id="hora_salida2" name="hora_salida2" value="20:00">
                         </div>
                     </div>
 
@@ -86,4 +94,24 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const turnoPartidoCheckbox = document.getElementById('turno_partido');
+    const turnoTardeInputs = document.querySelectorAll('.turno-tarde input');
+    
+    function updateTurnoTarde() {
+        const isChecked = turnoPartidoCheckbox.checked;
+        document.querySelectorAll('.turno-tarde').forEach(div => {
+            div.style.display = isChecked ? 'block' : 'none';
+        });
+        turnoTardeInputs.forEach(input => {
+            input.required = isChecked;
+        });
+    }
+    
+    turnoPartidoCheckbox.addEventListener('change', updateTurnoTarde);
+    updateTurnoTarde(); // Ejecutar al cargar la página
+});
+</script>
 {% endblock %} 

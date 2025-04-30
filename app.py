@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, send_file
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from datetime import datetime, timedelta
 import os
@@ -8,9 +8,20 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, CallbackQueryHandler
 import asyncio
 import logging
-from models import db, Usuario, Empleado, Registro, get_madrid_time, utc_to_madrid, madrid_to_utc
+from models import db, Usuario, Empleado, Registro, get_madrid_time, utc_to_madrid, madrid_to_utc, process_employee_times
 import schedule
 import time
+from flask_wtf import FlaskForm
+from wtforms import StringField, TimeField, BooleanField
+from wtforms.validators import Optional
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4, landscape
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Image, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch, cm
+from io import BytesIO
+from exportaciones import exportar_pdf
+from exportaciones_excel import exportar_excel
 
 # Configurar logging
 logging.basicConfig(
@@ -117,12 +128,24 @@ def nuevo_empleado():
         dni = request.form['dni']
         seg_social = request.form['seg_social']
         telefono = request.form['telefono']
-        hora_entrada = datetime.strptime(request.form['hora_entrada'], '%H:%M').time()
-        hora_salida = datetime.strptime(request.form['hora_salida'], '%H:%M').time()
-        hora_entrada2 = datetime.strptime(request.form['hora_entrada2'], '%H:%M').time()
-        hora_salida2 = datetime.strptime(request.form['hora_salida2'], '%H:%M').time()
-        sabados = 'sabados' in request.form
-        activo = 'activo' in request.form
+        
+        # Verificar si el teléfono ya existe
+        if Empleado.query.filter_by(telefono=telefono).first():
+            flash('Ya existe un empleado con ese número de teléfono', 'danger')
+            return render_template('nuevo_empleado.html')
+        
+        # Verificar si el DNI ya existe
+        if Empleado.query.filter_by(dni=dni).first():
+            flash('Ya existe un empleado con ese DNI', 'danger')
+            return render_template('nuevo_empleado.html')
+        
+        # Verificar si el número de seguridad social ya existe
+        if Empleado.query.filter_by(seg_social=seg_social).first():
+            flash('Ya existe un empleado con ese número de seguridad social', 'danger')
+            return render_template('nuevo_empleado.html')
+        
+        # Procesar los campos de tiempo
+        tiempos = process_employee_times(request.form)
         
         empleado = Empleado(
             nombre=nombre,
@@ -130,12 +153,12 @@ def nuevo_empleado():
             dni=dni,
             seg_social=seg_social,
             telefono=telefono,
-            hora_entrada=hora_entrada,
-            hora_salida=hora_salida,
-            hora_entrada2=hora_entrada2,
-            hora_salida2=hora_salida2,
-            sabados=sabados,
-            activo=activo
+            hora_entrada=tiempos['hora_entrada'],
+            hora_salida=tiempos['hora_salida'],
+            hora_entrada2=tiempos['hora_entrada2'],
+            hora_salida2=tiempos['hora_salida2'],
+            sabados='sabados' in request.form,
+            activo='activo' in request.form
         )
         db.session.add(empleado)
         db.session.commit()
@@ -151,15 +174,43 @@ def editar_empleado(empleado_id):
     empleado = Empleado.query.get_or_404(empleado_id)
     
     if request.method == 'POST':
-        empleado.nombre = request.form['nombre']
-        empleado.apellidos = request.form['apellidos']
-        empleado.dni = request.form['dni']
-        empleado.seg_social = request.form['seg_social']
-        empleado.telefono = request.form['telefono']
-        empleado.hora_entrada = datetime.strptime(request.form['hora_entrada'], '%H:%M').time()
-        empleado.hora_salida = datetime.strptime(request.form['hora_salida'], '%H:%M').time()
-        empleado.hora_entrada2 = datetime.strptime(request.form['hora_entrada2'], '%H:%M').time()
-        empleado.hora_salida2 = datetime.strptime(request.form['hora_salida2'], '%H:%M').time()
+        nombre = request.form['nombre']
+        apellidos = request.form['apellidos']
+        dni = request.form['dni']
+        seg_social = request.form['seg_social']
+        telefono = request.form['telefono']
+        
+        # Verificar si el teléfono ya existe en otro empleado
+        otro_empleado = Empleado.query.filter_by(telefono=telefono).first()
+        if otro_empleado and otro_empleado.id != empleado_id:
+            flash('Ya existe otro empleado con ese número de teléfono', 'danger')
+            return render_template('editar_empleado.html', empleado=empleado)
+        
+        # Verificar si el DNI ya existe en otro empleado
+        otro_empleado = Empleado.query.filter_by(dni=dni).first()
+        if otro_empleado and otro_empleado.id != empleado_id:
+            flash('Ya existe otro empleado con ese DNI', 'danger')
+            return render_template('editar_empleado.html', empleado=empleado)
+        
+        # Verificar si el número de seguridad social ya existe en otro empleado
+        otro_empleado = Empleado.query.filter_by(seg_social=seg_social).first()
+        if otro_empleado and otro_empleado.id != empleado_id:
+            flash('Ya existe otro empleado con ese número de seguridad social', 'danger')
+            return render_template('editar_empleado.html', empleado=empleado)
+        
+        empleado.nombre = nombre
+        empleado.apellidos = apellidos
+        empleado.dni = dni
+        empleado.seg_social = seg_social
+        empleado.telefono = telefono
+        
+        # Procesar los campos de tiempo
+        tiempos = process_employee_times(request.form)
+        empleado.hora_entrada = tiempos['hora_entrada']
+        empleado.hora_salida = tiempos['hora_salida']
+        empleado.hora_entrada2 = tiempos['hora_entrada2']
+        empleado.hora_salida2 = tiempos['hora_salida2']
+        
         empleado.sabados = 'sabados' in request.form
         empleado.activo = 'activo' in request.form
         
@@ -240,8 +291,68 @@ def consulta_registros():
 @app.route('/panel_control')
 @login_required
 def panel_control():
-    empleados = Empleado.query.all()
-    return render_template('panel_control.html', empleados=empleados)
+    empleados = Empleado.query.filter_by(activo=True).order_by(Empleado.apellidos).all()
+    return render_template('panel_control.html', empleados=empleados, now=get_madrid_time)
+
+@app.route('/exportar_pdf')
+@login_required
+def exportar_pdf_route():
+    # Obtener los parámetros de la consulta
+    fecha_inicio = request.args.get('fecha_inicio', get_madrid_time().strftime('%Y-%m-%d'))
+    fecha_fin = request.args.get('fecha_fin', get_madrid_time().strftime('%Y-%m-%d'))
+    empleado_id = request.args.get('empleado_id', 'todos')
+    
+    # Construir la consulta base
+    query = Registro.query.join(Empleado)
+    
+    # Convertir las fechas a datetime con zona horaria de Madrid
+    inicio = madrid_tz.localize(datetime.strptime(fecha_inicio + ' 00:00:00', '%Y-%m-%d %H:%M:%S'))
+    fin = madrid_tz.localize(datetime.strptime(fecha_fin + ' 23:59:59', '%Y-%m-%d %H:%M:%S'))
+    
+    # Convertir a UTC para la consulta
+    inicio_utc = inicio.astimezone(pytz.UTC)
+    fin_utc = fin.astimezone(pytz.UTC)
+    
+    # Aplicar filtros
+    query = query.filter(Registro.fecha.between(inicio_utc, fin_utc))
+    
+    if empleado_id != 'todos':
+        query = query.filter(Registro.empleado_id == empleado_id)
+    
+    # Obtener todos los registros
+    registros = query.order_by(Registro.fecha.desc(), Empleado.apellidos).all()
+    
+    return exportar_pdf(registros, fecha_inicio, fecha_fin)
+
+@app.route('/exportar_excel')
+@login_required
+def exportar_excel_route():
+    # Obtener los parámetros de la consulta
+    fecha_inicio = request.args.get('fecha_inicio', get_madrid_time().strftime('%Y-%m-%d'))
+    fecha_fin = request.args.get('fecha_fin', get_madrid_time().strftime('%Y-%m-%d'))
+    empleado_id = request.args.get('empleado_id', 'todos')
+    
+    # Construir la consulta base
+    query = Registro.query.join(Empleado)
+    
+    # Convertir las fechas a datetime con zona horaria de Madrid
+    inicio = madrid_tz.localize(datetime.strptime(fecha_inicio + ' 00:00:00', '%Y-%m-%d %H:%M:%S'))
+    fin = madrid_tz.localize(datetime.strptime(fecha_fin + ' 23:59:59', '%Y-%m-%d %H:%M:%S'))
+    
+    # Convertir a UTC para la consulta
+    inicio_utc = inicio.astimezone(pytz.UTC)
+    fin_utc = fin.astimezone(pytz.UTC)
+    
+    # Aplicar filtros
+    query = query.filter(Registro.fecha.between(inicio_utc, fin_utc))
+    
+    if empleado_id != 'todos':
+        query = query.filter(Registro.empleado_id == empleado_id)
+    
+    # Obtener todos los registros
+    registros = query.order_by(Registro.fecha.desc(), Empleado.apellidos).all()
+    
+    return exportar_excel(registros, fecha_inicio, fecha_fin)
 
 # Funciones del bot
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -428,6 +539,16 @@ def run_bot():
         logger.info("Creando nuevo event loop para el bot")
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
+        
+        # Verificar si ya hay una instancia del bot en ejecución
+        if telegram_bot is not None:
+            logger.warning("Ya hay una instancia del bot en ejecución. Cerrando la anterior...")
+            try:
+                loop.run_until_complete(telegram_bot.stop())
+                loop.run_until_complete(telegram_bot.shutdown())
+            except Exception as e:
+                logger.error(f"Error al cerrar la instancia anterior del bot: {str(e)}")
+        
         logger.info("Ejecutando setup_bot en el loop")
         loop.run_until_complete(setup_bot())
     except Exception as e:
@@ -476,4 +597,12 @@ if __name__ == '__main__':
 
     # Ejecutar la aplicación Flask
     logger.info("Iniciando aplicación Flask")
-    app.run(debug=True, use_reloader=False) 
+    app.run(debug=True, use_reloader=False)
+
+class EmpleadoForm(FlaskForm):
+    # ... otros campos ...
+    hora_entrada = TimeField('Hora Entrada (mañana)', validators=[Optional()])
+    hora_salida = TimeField('Hora Salida (mañana)', validators=[Optional()])
+    hora_entrada2 = TimeField('Hora Entrada (tarde)', validators=[Optional()])
+    hora_salida2 = TimeField('Hora Salida (tarde)', validators=[Optional()])
+    # ... otros campos ... 
